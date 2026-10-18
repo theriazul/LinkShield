@@ -15,19 +15,63 @@ const state = {
   lastTrackedPage: null,
   analyticsRange: '7d',
   analyticsRequestId: 0,
-  analyticsTrackingFailed: false
+  analyticsTrackingError: ''
 };
 
 const analyticsCounterAnimations = new WeakMap();
 let mobileBottomNotchAnimationFrame = 0;
 let mobileBottomNotchCenter = null;
-const API_BASE_URL = document.querySelector('meta[name="linkshield-api-base"]')?.content || 'http://localhost:8001';
+const configuredApiBaseUrl = document.querySelector('meta[name="linkshield-api-base"]')?.content.trim().replace(/\/+$/, '') || '';
+const isLocalDevelopment = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+const API_BASE_URL = configuredApiBaseUrl || (isLocalDevelopment ? 'http://localhost:8001' : '');
+
+function getApiUrl(path) {
+  if (!API_BASE_URL) {
+    const error = new Error('API_NOT_CONFIGURED');
+    error.code = 'API_NOT_CONFIGURED';
+    throw error;
+  }
+  if (window.location.protocol === 'https:' && /^http:\/\//i.test(API_BASE_URL)) {
+    const error = new Error('API_HTTPS_REQUIRED');
+    error.code = 'API_HTTPS_REQUIRED';
+    throw error;
+  }
+  return `${API_BASE_URL}${path}`;
+}
+
+function getAnalyticsErrorMessage(error) {
+  if (error?.code === 'API_NOT_CONFIGURED') {
+    return 'Analytics API is not configured. Set the linkshield-api-base meta tag to your deployed HTTPS backend origin.';
+  }
+  if (error?.code === 'API_HTTPS_REQUIRED') {
+    return 'The analytics API must use HTTPS when the LinkShield site is served over HTTPS.';
+  }
+  if (error?.code === 'INVALID_ANALYTICS_RESPONSE') {
+    return 'The analytics API returned an invalid response. Check that the deployed backend is up to date.';
+  }
+  if (error?.status === 404) {
+    return 'The analytics API endpoint was not found. Check that the deployed backend includes the analytics routes.';
+  }
+  if (error?.status === 429) {
+    return 'The analytics API rate limit was reached. Please wait and try again.';
+  }
+  if (Number.isInteger(error?.status) && error.status >= 500) {
+    return `The analytics backend returned an error (${error.status}). Check the backend service logs.`;
+  }
+  if (Number.isInteger(error?.status)) {
+    return `The analytics API rejected the request (${error.status}). Check the backend configuration.`;
+  }
+  if (error instanceof TypeError) {
+    return 'Cannot reach the analytics API. Check that the backend is running, uses HTTPS, and allows this site in CORS_ORIGINS.';
+  }
+  return 'The analytics API returned an unexpected response. Check the backend service logs.';
+}
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => Array.from(document.querySelectorAll(selector));
 
 async function fetchScanApi(url) {
-  const response = await fetch(`${API_BASE_URL}/api/scan`, {
+  const response = await fetch(getApiUrl('/api/scan'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -438,25 +482,39 @@ function trackPageView(page) {
   state.lastTrackedPage = page;
   if (!isAnalyticsEnabled()) return;
 
-  const visitorId = makeAnonymousId(STORAGE_KEYS.analyticsVisitor, localStorage);
-  const sessionId = makeAnonymousId(STORAGE_KEYS.analyticsSession, sessionStorage);
-  if (!visitorId || !sessionId) {
-    setAnalyticsStatus('Analytics unavailable in this browser', true);
+  let pageViewUrl;
+  try {
+    pageViewUrl = getApiUrl('/api/analytics/pageview');
+  } catch (error) {
+    state.analyticsTrackingError = getAnalyticsErrorMessage(error);
+    if (state.activeView === 'analytics') setAnalyticsStatus(state.analyticsTrackingError, true);
     return;
   }
 
-  fetch(`${API_BASE_URL}/api/analytics/pageview`, {
+  const visitorId = makeAnonymousId(STORAGE_KEYS.analyticsVisitor, localStorage);
+  const sessionId = makeAnonymousId(STORAGE_KEYS.analyticsSession, sessionStorage);
+  if (!visitorId || !sessionId) {
+    state.analyticsTrackingError = 'Analytics unavailable in this browser. Check browser storage permissions and the analytics privacy setting.';
+    setAnalyticsStatus(state.analyticsTrackingError, true);
+    return;
+  }
+
+  fetch(pageViewUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({ visitor_id: visitorId, session_id: sessionId, page }),
     keepalive: true
   }).then((response) => {
-    if (!response.ok) throw new Error(`Analytics request failed (${response.status}).`);
-    state.analyticsTrackingFailed = false;
+    if (!response.ok) {
+      const error = new Error('Analytics page-view request failed.');
+      error.status = response.status;
+      throw error;
+    }
+    state.analyticsTrackingError = '';
     if (state.activeView === 'analytics') setAnalyticsStatus('Collecting pseudonymous visits');
-  }).catch(() => {
-    state.analyticsTrackingFailed = true;
-    setAnalyticsStatus('Analytics service temporarily unavailable', true);
+  }).catch((error) => {
+    state.analyticsTrackingError = getAnalyticsErrorMessage(error);
+    setAnalyticsStatus(state.analyticsTrackingError, true);
   });
 }
 
@@ -584,10 +642,14 @@ async function loadVisitorAnalytics(reportRange = state.analyticsRange) {
   setAnalyticsStatus('Loading aggregated analytics');
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/analytics?report_range=${encodeURIComponent(reportRange)}`, {
+    const response = await fetch(getApiUrl(`/api/analytics?report_range=${encodeURIComponent(reportRange)}`), {
       headers: { Accept: 'application/json' }
     });
-    if (!response.ok) throw new Error(`Analytics request failed (${response.status}).`);
+    if (!response.ok) {
+      const error = new Error('Analytics request failed.');
+      error.status = response.status;
+      throw error;
+    }
     const data = await response.json();
     if (requestId !== state.analyticsRequestId) return;
     const metricKeys = ['page_views', 'unique_visitors', 'today_visitors', 'active_visitors'];
@@ -600,7 +662,9 @@ async function loadVisitorAnalytics(reportRange = state.analyticsRange) {
       && point.page_views >= 0
     ));
     if (!validSummary || !validSeries) {
-      throw new Error('Analytics service returned an invalid response.');
+      const error = new Error('Invalid analytics response.');
+      error.code = 'INVALID_ANALYTICS_RESPONSE';
+      throw error;
     }
 
     metricKeys.forEach((key) => {
@@ -623,8 +687,8 @@ async function loadVisitorAnalytics(reportRange = state.analyticsRange) {
     }
     if (!isAnalyticsEnabled()) {
       setAnalyticsStatus('Collection disabled in this browser');
-    } else if (state.analyticsTrackingFailed) {
-      setAnalyticsStatus('Page-view collection temporarily unavailable', true);
+    } else if (state.analyticsTrackingError) {
+      setAnalyticsStatus(state.analyticsTrackingError, true);
     } else {
       setAnalyticsStatus('Collecting pseudonymous visits');
     }
@@ -639,9 +703,10 @@ async function loadVisitorAnalytics(reportRange = state.analyticsRange) {
       delete metric.dataset.target;
       delete metric.dataset.currentValue;
     });
-    chart.innerHTML = '<p class="chart-empty">Visitor analytics could not be loaded. Check that the LinkShield API is running, then try again.</p>';
+    const diagnostic = getAnalyticsErrorMessage(error);
+    chart.innerHTML = `<p class="chart-empty">${escapeHtml(diagnostic)}</p>`;
     if (updated) updated.textContent = 'No successful update is available.';
-    setAnalyticsStatus('Analytics service unavailable', true);
+    setAnalyticsStatus(diagnostic, true);
   }
 }
 

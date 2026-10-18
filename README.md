@@ -69,10 +69,43 @@ The local Uvicorn command disables access logs so it does not write client
 addresses. Apply equivalent anonymization or log-retention controls to any
 reverse proxy or hosting platform.
 
-For deployment, change the `linkshield-api-base` meta tag in `index.html` to
-the public HTTPS API origin and set `CORS_ORIGINS` to the exact frontend
-origin. Use persistent storage for the SQLite file. The default
-`localhost:8001` API origin is for local development only.
+## Deploying the API with GitHub Pages
+
+GitHub Pages hosts the static frontend only; it does not run the FastAPI
+backend or retain its SQLite database. The analytics dashboard and page-view
+collection therefore require a separately deployed, publicly reachable
+FastAPI backend. There is no backend deployment configured in this repository.
+
+1. Deploy the `backend` directory to a Python web-service host that supports
+   HTTPS and persistent disk storage. Install dependencies with
+   `pip install -r requirements.txt` from that directory and start the service
+   with `uvicorn app.main:app --host 0.0.0.0 --port $PORT` (use the port syntax
+   required by your host).
+2. Set `CORS_ORIGINS` in the backend service to the exact frontend **origin**.
+   For this repository's GitHub Pages project site, that is
+   `https://theriazul.github.io` (do not include `/LinkShield/`). If you use a
+   custom domain, use its HTTPS origin instead.
+3. Attach persistent storage to the backend and set `LINKSHIELD_ANALYTICS_DB`
+   to a SQLite file path on that storage. Without a persistent disk, analytics
+   records may be lost when the backend is redeployed or restarted.
+4. After the backend is running, set the `linkshield-api-base` meta tag in
+   `index.html` to its public HTTPS origin, for example
+   `https://your-linkshield-api.example.com`. The API origin is public
+   configuration, not a secret. GitHub Pages does not inject backend
+   environment variables into static HTML, so this value must be committed
+   before publishing the frontend.
+5. Verify `https://your-linkshield-api.example.com/api/health` returns a
+   healthy response, then visit the published site's Analytics page and
+   confirm it loads aggregate values. A new backend database correctly
+   reports real zeros until actual page views are recorded.
+
+For local development, leave the meta tag empty and run the frontend on
+`localhost` plus the backend using the Uvicorn command above with port `8001`.
+The frontend uses `http://localhost:8001` only when opened from `localhost` or
+`127.0.0.1`; a deployed site will not silently send analytics to localhost.
+The frontend reports configuration, network/CORS, HTTP, and malformed-response
+errors in the Analytics page without displaying backend response contents or
+visitor identifiers.
 
 ## Important security note
 This project is designed for local heuristic review and education. It does not connect to a real threat-intelligence service or guarantee that a website is safe. Use the results as a guide, not as a final verdict.
