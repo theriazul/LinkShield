@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090909" />
+    <meta name="linkshield-api-base" content="http://localhost:8001" />
+    <meta
+      name="description"
+      content="LinkShield helps inspect suspicious URLs, scam messages, QR codes, and weak password patterns with a privacy-first, browser-based workflow."
+    />
+    <title>LinkShield | Smart Security Checks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-theme="dark">
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+
+    <div class="app-shell">
+      <header class="app-navbar">
+        <a class="brand" href="#overview" aria-label="LinkShield home">
+          <span class="brand-mark" aria-hidden="true"><i data-lucide="shield-check"></i></span>
+          <span class="brand-name"><span>Link</span><span class="accent">Shield</span></span>
+        </a>
+
+        <button class="mobile-menu" id="mobileMenu" type="button" aria-label="Open navigation menu" aria-controls="mainNavigation" aria-expanded="false">
+          <span class="menu-icon" aria-hidden="true">
+            <span class="menu-icon-line"></span>
+            <span class="menu-icon-line"></span>
+            <span class="menu-icon-line"></span>
+          </span>
+        </button>
+
+        <nav class="top-nav" id="mainNavigation" aria-label="Main navigation">
+          <button class="nav-item active" type="button" data-view="overview">
+            <span class="nav-icon"><i data-lucide="layout-grid"></i></span>
+            <span>Overview</span>
+          </button>
+          <button class="nav-item" type="button" data-view="scanner">
+            <span class="nav-icon"><i data-lucide="scan-search"></i></span>
+            <span>Link Scanner</span>
+          </button>
+          <button class="nav-item" type="button" data-view="scam">
+            <span class="nav-icon"><i data-lucide="message-square-warning"></i></span>
+            <span>Scam Analyzer</span>
+          </button>
+          <button class="nav-item" type="button" data-view="qr">
+            <span class="nav-icon"><i data-lucide="qr-code"></i></span>
+            <span>QR Inspector</span>
+          </button>
+          <button class="nav-item" type="button" data-view="password">
+            <span class="nav-icon"><i data-lucide="key-round"></i></span>
+            <span>Password Checker</span>
+          </button>
+          <button class="nav-item" type="button" data-view="utilities">
+            <span class="nav-icon"><i data-lucide="tool-case"></i></span>
+            <span>URL Utilities</span>
+          </button>
+          <button class="nav-item" type="button" data-view="history">
+            <span class="nav-icon"><i data-lucide="history"></i></span>
+            <span>Reports &amp; History</span>
+          </button>
+          <button class="nav-item" type="button" data-view="analytics">
+            <span class="nav-icon"><i data-lucide="chart-no-axes-combined"></i></span>
+            <span>Visitor Analytics</span>
+          </button>
+          <button class="nav-item" type="button" data-view="learning">
+            <span class="nav-icon"><i data-lucide="book-open-text"></i></span>
+            <span>Security Learning</span>
+          </button>
+          <button class="nav-item" type="button" data-view="settings">
+            <span class="nav-icon"><i data-lucide="settings"></i></span>
+            <span>Settings</span>
+          </button>
+          <button class="icon-button nav-theme-toggle" id="themeToggle" type="button" aria-label="Toggle light or dark theme">
+            <i data-lucide="sun-moon"></i>
+          </button>
+        </nav>
+
+        <div class="navbar-actions">
+          <div class="status-badge navbar-status" title="Privacy-first checks for URL, text, and credential review.">
+            <span class="status-dot"></span>
+            Local-only heuristics
+          </div>
+        </div>
+      </header>
+
+      <nav class="mobile-bottom-nav" aria-label="Quick navigation">
+        <svg class="mobile-bottom-shape" aria-hidden="true" focusable="false">
+          <path class="mobile-bottom-shape-path"></path>
+        </svg>
+        <button class="nav-item mobile-bottom-item active" type="button" data-view="overview" aria-label="Overview" aria-current="page">
+          <span class="mobile-bottom-icon"><i data-lucide="house"></i></span>
+          <span class="mobile-bottom-label">Home</span>
+        </button>
+        <button class="nav-item mobile-bottom-item" type="button" data-view="scanner" aria-label="Link Scanner">
+          <span class="mobile-bottom-icon"><i data-lucide="scan-search"></i></span>
+          <span class="mobile-bottom-label">Scan</span>
+        </button>
+        <button class="nav-item mobile-bottom-item" type="button" data-view="scam" aria-label="Scam Analyzer">
+          <span class="mobile-bottom-icon"><i data-lucide="shield-alert"></i></span>
+          <span class="mobile-bottom-label">Scam</span>
+        </button>
+        <button class="nav-item mobile-bottom-item" type="button" data-view="history" aria-label="Reports and History">
+          <span class="mobile-bottom-icon"><i data-lucide="history"></i></span>
+          <span class="mobile-bottom-label">Reports</span>
+        </button>
+        <button class="nav-item mobile-bottom-item" type="button" data-view="settings" aria-label="Settings">
+          <span class="mobile-bottom-icon"><i data-lucide="settings"></i></span>
+          <span class="mobile-bottom-label">Settings</span>
+        </button>
+        <span class="mobile-bottom-dot" aria-hidden="true"></span>
+      </nav>
+
+      <main class="main-panel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" id="pageKicker">Overview</p>
+            <h1 id="pageTitle">Stay One Step Ahead.</h1>
+          </div>
+        </header>
+
+        <section id="view-overview" class="view-panel active" aria-label="Overview dashboard">
+          <section class="overview-hero panel" aria-labelledby="overviewHeroTitle">
+            <div class="hero-copy">
+              <div class="eyebrow accent-eyebrow">Privacy-first security checks</div>
+              <h1 id="overviewHeroTitle">Browse smarter.<br /><span>Click with confidence.</span></h1>
+              <p>Check suspicious links, understand potential online threats, and make more informed decisions before you click.</p>
+              <div class="hero-actions">
+                <button class="primary-button hero-cta" type="button" data-view="scanner">
+                  Check a Link <i data-lucide="arrow-up-right"></i>
+                </button>
+                <button class="secondary-button hero-secondary" type="button" data-view="learning">
+                  Learn to stay safe <i data-lucide="book-open-text"></i>
+                </button>
+              </div>
+              <div class="hero-trust">
+                <span><i data-lucide="lock-keyhole"></i> Password values aren't saved</span>
+                <span><i data-lucide="history"></i> Reports stay on this device</span>
+              </div>
+              <small class="overview-updated" id="overviewLastUpdated">No saved checks yet</small>
+            </div>
+
+            <div class="hero-visual" aria-hidden="true">
+              <div class="hero-aura"></div>
+              <div class="hero-orbit hero-orbit-outer"></div>
+              <div class="hero-orbit hero-orbit-inner"></div>
+              <div class="hero-spark hero-spark-one"></div>
+              <div class="hero-spark hero-spark-two"></div>
+              <div class="hero-shield">
+                <svg class="hero-shield-svg" viewBox="0 0 256 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <linearGradient id="heroShieldStroke" x1="46" y1="25" x2="215" y2="244" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#FFD28A" />
+                      <stop offset="0.48" stop-color="#FF8A19" />
+                      <stop offset="1" stop-color="#FF5A00" />
+                    </linearGradient>
+                    <linearGradient id="heroShieldFill" x1="128" y1="22" x2="128" y2="258" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#FF9A32" stop-opacity="0.18" />
+                      <stop offset="1" stop-color="#FF6500" stop-opacity="0.015" />
+                    </linearGradient>
+                  </defs>
+                  <path class="hero-shield-body" d="M128 15 226 51v67c0 63-39 112-98 143-59-31-98-80-98-143V51l98-36Z" fill="url(#heroShieldFill)" stroke="url(#heroShieldStroke)" stroke-width="4" stroke-linejoin="round" />
+                  <path class="hero-shield-check" d="m83 137 30 30 62-67" stroke="url(#heroShieldStroke)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </div>
+              <div class="hero-visual-caption">
+                <span class="status-dot"></span>
+                <span>Pause. Inspect. Verify.</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="overview-stats" aria-label="Your security activity">
+            <article class="stat-card panel">
+              <div class="stat-header">
+                <span class="stat-label">Total URL inspections</span>
+                <span class="stat-icon success"><i data-lucide="mouse-pointer-2"></i></span>
+              </div>
+              <strong id="statTotalUrls">0</strong>
+              <small>Stored in local history</small>
+            </article>
+
+            <article class="stat-card panel">
+              <div class="stat-header">
+                <span class="stat-label">High-caution findings</span>
+                <span class="stat-icon warning"><i data-lucide="alert-triangle"></i></span>
+              </div>
+              <strong id="statHighRisk">0</strong>
+              <small>Higher-risk URLs and reports</small>
+            </article>
+
+            <article class="stat-card panel">
+              <div class="stat-header">
+                <span class="stat-label">Messages analyzed</span>
+                <span class="stat-icon info"><i data-lucide="message-square-text"></i></span>
+              </div>
+              <strong id="statMessages">0</strong>
+              <small>Scam and phishing checks</small>
+            </article>
+
+            <article class="stat-card panel">
+              <div class="stat-header">
+                <span class="stat-label">Saved reports</span>
+                <span class="stat-icon neutral"><i data-lucide="file-text"></i></span>
+              </div>
+              <strong id="statSavedReports">0</strong>
+              <small>Local records retained</small>
+            </article>
+          </div>
+
+          <section class="panel trend-panel overview-trend" aria-labelledby="securityTrendTitle">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">Your local security history</div>
+                <h3 id="securityTrendTitle">Security activity</h3>
+                <p>Saved checks from the last 7 days. This data stays in this browser.</p>
+              </div>
+            </div>
+            <div id="securityActivityChart" class="trend-chart" aria-live="polite">
+              <p class="chart-empty">Security activity will appear after you save a check.</p>
+            </div>
+          </section>
+
+          <div class="section-row">
+            <div class="panel list-panel">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Recent activity</div>
+                  <h3>Activity timeline</h3>
+                </div>
+                <button class="small-button" type="button" data-view="history">View all</button>
+              </div>
+              <div id="recentActivityList" class="activity-list"></div>
+            </div>
+
+            <div class="panel list-panel">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Quick tools</div>
+                  <h3>Fast actions</h3>
+                </div>
+              </div>
+              <div class="tool-grid">
+                <button class="tool-button" type="button" data-view="scanner">
+                  <span class="tool-icon"><i data-lucide="scan-line"></i></span>
+                  <span>Scan URL</span>
+                </button>
+                <button class="tool-button" type="button" data-view="scam">
+                  <span class="tool-icon"><i data-lucide="message-square-warning"></i></span>
+                  <span>Message check</span>
+                </button>
+                <button class="tool-button" type="button" data-view="qr">
+                  <span class="tool-icon"><i data-lucide="qr-code"></i></span>
+                  <span>QR inspector</span>
+                </button>
+                <button class="tool-button" type="button" data-view="password">
+                  <span class="tool-icon"><i data-lucide="key-round"></i></span>
+                  <span>Password check</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel reminder-card">
+            <div class="reminder-header">
+              <div class="reminder-icon"><i data-lucide="shield-alert"></i></div>
+              <div>
+                <div class="eyebrow">Security reminder</div>
+                <h3>Automation is a guide, not a guarantee.</h3>
+              </div>
+            </div>
+            <p>Local heuristic checks can flag suspicious patterns, but they cannot confirm whether a site or message is truly safe. Verify unexpected links through a trusted channel before acting.</p>
+          </div>
+        </section>
+
+        <section id="view-analytics" class="view-panel" aria-label="Website Visitor Analytics">
+          <div class="analytics-intro panel">
+            <div>
+              <div class="eyebrow">First-party, pseudonymous metrics</div>
+              <h2>Website Visitor Analytics</h2>
+              <p>Aggregated visits to LinkShield. Visitor counts are based on a random browser identifier, not security scans.</p>
+            </div>
+            <div class="analytics-status" id="analyticsCollectionStatus" role="status" aria-live="polite">
+              <span class="status-dot"></span>
+              Checking analytics service
+            </div>
+          </div>
+
+          <div class="analytics-stat-grid" aria-label="Visitor statistics">
+            <article class="analytics-stat-card panel">
+              <span class="stat-label">Page views</span>
+              <strong data-analytics-count="page_views">—</strong>
+              <small>Recorded in the last 90 days</small>
+            </article>
+            <article class="analytics-stat-card panel">
+              <span class="stat-label">Unique visitors</span>
+              <strong data-analytics-count="unique_visitors">—</strong>
+              <small>Estimated pseudonymous browsers, last 90 days</small>
+            </article>
+            <article class="analytics-stat-card panel">
+              <span class="stat-label">Today's visitors</span>
+              <strong data-analytics-count="today_visitors">—</strong>
+              <small>Distinct browsers today (UTC)</small>
+            </article>
+            <article class="analytics-stat-card panel">
+              <span class="stat-label">Active visitors</span>
+              <strong data-analytics-count="active_visitors">—</strong>
+              <small>Seen within the last 5 minutes</small>
+            </article>
+          </div>
+
+          <section class="panel trend-panel visitor-trend" aria-labelledby="visitorTrendTitle">
+            <div class="section-head analytics-chart-head">
+              <div>
+                <div class="eyebrow">Aggregated activity</div>
+                <h3 id="visitorTrendTitle">Visitor trends</h3>
+                <p id="visitorRangeDescription">Daily unique visitors, last 7 days (UTC)</p>
+              </div>
+              <div class="range-controls" role="group" aria-label="Visitor trend reporting period">
+                <button class="range-button" type="button" data-analytics-range="24h" aria-pressed="false">24 hours</button>
+                <button class="range-button active" type="button" data-analytics-range="7d" aria-pressed="true">7 days</button>
+                <button class="range-button" type="button" data-analytics-range="30d" aria-pressed="false">30 days</button>
+              </div>
+            </div>
+            <div id="visitorChart" class="trend-chart" aria-live="polite">
+              <p class="chart-empty">Loading visitor analytics…</p>
+            </div>
+            <p class="analytics-transparency">
+              Page views are counted once per page per browser session. A unique visitor is a random pseudonymous identifier stored in this browser and deduplicated for 90 days. Timestamps and daily totals use UTC. The analytics database stores no IP addresses or referrers and exposes no individual browsing histories. You can disable collection in Settings.
+            </p>
+            <p class="analytics-updated" id="analyticsLastUpdated">Waiting for the first successful update.</p>
+          </section>
+        </section>
+
+        <section id="view-scanner" class="view-panel" aria-label="URL scanner">
+          <div class="panel scanner-panel">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">Link scanner</div>
+                <h3>Inspect a URL before you click</h3>
+              </div>
+              <div class="tag-pill">Local heuristic scan</div>
+            </div>
+
+            <div class="field-row">
+              <label class="field-label" for="urlInput">URL</label>
+              <div class="input-wrap">
+                <i data-lucide="link-2"></i>
+                <input id="urlInput" type="text" inputmode="url" placeholder="https://example.com" autocomplete="url" spellcheck="false" />
+                <button class="clear-button" id="clearInput" type="button" aria-label="Clear URL input">
+                  <i data-lucide="x"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="sample-links">
+              <span>Try an example:</span>
+              <button class="sample-link" type="button" data-url="https://example.com">Example</button>
+              <button class="sample-link" type="button" data-url="http://secure-login-account.example.invalid/verify">Suspicious</button>
+            </div>
+
+            <div class="button-row">
+              <button class="primary-button" id="scanButton" type="button">Inspect URL <i data-lucide="scan-line"></i></button>
+              <button class="secondary-button" id="saveScannerReport" type="button">Save report</button>
+              <button class="secondary-button" id="downloadScannerReport" type="button">Download JSON</button>
+            </div>
+
+            <div id="scannerProgress" class="progress-wrap hidden" role="status" aria-live="polite">
+              <span class="spinner"></span>
+              <span id="progressText">Reviewing URL structure...</span>
+            </div>
+          </div>
+
+          <div class="panel results-panel" id="urlResultPanel">
+            <div class="result-header">
+              <div class="result-title-wrap">
+                <div class="result-badge"><i data-lucide="shield-check"></i></div>
+                <div>
+                  <h3>Inspection report</h3>
+                  <p id="resultSubtitle">Your results will appear here.</p>
+                </div>
+              </div>
+              <span class="status-pill status-neutral" id="statusPill">Awaiting URL</span>
+            </div>
+
+            <div id="emptyState" class="empty-state">
+              <div class="empty-graphic"><i data-lucide="scan-search"></i></div>
+              <h4>Ready to inspect</h4>
+              <p>Use the URL input above to review format, HTTPS status, and common phishing signs.</p>
+            </div>
+
+            <div id="reportContent" class="report-content hidden">
+              <div class="risk-summary-row">
+                <div>
+                  <span class="mini-label">Local risk indicator</span>
+                  <strong id="riskLabel">No obvious flags</strong>
+                </div>
+                <div class="risk-score" id="riskScore">0<small>/100</small></div>
+              </div>
+              <div class="risk-meter"><span id="riskMeterFill"></span></div>
+              <div class="checked-url">
+                <i data-lucide="link-2"></i>
+                <span id="checkedUrl">-</span>
+                <button id="copyUrl" type="button" aria-label="Copy inspected URL"><i data-lucide="copy"></i></button>
+              </div>
+              <div id="checksList" class="checks-list"></div>
+              <div class="report-disclaimer"><i data-lucide="alert-triangle"></i><span>This is a local heuristic only and should not be treated as a malware verdict.</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-scam" class="view-panel" aria-label="Scam analyzer">
+          <div class="panel">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">Scam analyzer</div>
+                <h3>Review suspicious text</h3>
+              </div>
+              <div class="tag-pill">Message checks</div>
+            </div>
+
+            <label class="field-label" for="messageInput">Paste a suspicious SMS, email, or social message</label>
+            <textarea id="messageInput" rows="7" placeholder="Example: Your account will be suspended unless you click now and verify your password." aria-label="Message to analyze"></textarea>
+
+            <div class="button-row">
+              <button class="primary-button" id="messageAnalyze" type="button">Analyze message</button>
+              <button class="secondary-button" id="copyMessageSummary" type="button">Copy summary</button>
+              <button class="secondary-button" id="saveMessageReport" type="button">Save report</button>
+            </div>
+
+            <div id="messageResult" class="message-result hidden"></div>
+          </div>
+        </section>
+
+        <section id="view-qr" class="view-panel" aria-label="QR inspector">
+          <div class="panel qr-panel">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">QR inspector</div>
+                <h3>Decode and review QR codes</h3>
+              </div>
+              <div class="tag-pill">PNG, JPG, WEBP</div>
+            </div>
+
+            <div class="dropzone" id="qrDropzone" tabindex="0" aria-label="Upload QR image">
+              <input id="qrInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+              <div class="dropzone-icon"><i data-lucide="upload-cloud"></i></div>
+              <p>Drag and drop a QR image here or use the selector below.</p>
+              <button class="primary-button" id="qrPick" type="button">Choose file</button>
+            </div>
+
+            <div class="qr-result-box">
+              <div class="qr-preview-wrap" id="qrPreviewWrap">
+                <div class="qr-placeholder">No image selected</div>
+              </div>
+              <div class="qr-details">
+                <h4>Decoded content</h4>
+                <pre id="qrDecodedContent">No QR content decoded yet.</pre>
+                <div class="button-row compact-row">
+                  <button class="secondary-button" id="copyDecodedQr" type="button">Copy content</button>
+                  <button class="secondary-button" id="scanDecodedQr" type="button">Inspect extracted URL</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-password" class="view-panel" aria-label="Password checker">
+          <div class="panel">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">Password checker</div>
+                <h3>Check password strength</h3>
+              </div>
+              <div class="tag-pill">Client-side only</div>
+            </div>
+
+            <label class="field-label" for="passwordInput">Password</label>
+            <div class="input-wrap password-wrap">
+              <i data-lucide="key-round"></i>
+              <input id="passwordInput" type="password" placeholder="Enter a password to assess" autocomplete="new-password" />
+              <button class="toggle-visibility" id="togglePassword" type="button" aria-label="Show or hide password">
+                <i data-lucide="eye"></i>
+              </button>
+            </div>
+
+            <div class="strength-summary">
+              <div class="strength-header">
+                <span>Strength</span>
+                <strong id="passwordStrengthText">Too short</strong>
+              </div>
+              <div class="strength-bar"><span id="passwordStrengthBar"></span></div>
+            </div>
+
+            <div class="password-notes" id="passwordNotes"></div>
+            <div class="button-row compact-row">
+              <button class="secondary-button" id="generatePassword" type="button">Generate sample passphrase</button>
+              <button class="secondary-button" id="clearPassword" type="button">Clear</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-utilities" class="view-panel" aria-label="URL utilities">
+          <div class="utility-grid">
+            <div class="panel utility-card">
+              <div class="section-head"><div><div class="eyebrow">Encoder</div><h3>URL encoder</h3></div></div>
+              <textarea id="encodeInput" rows="4" placeholder="Type text to encode as a URL component"></textarea>
+              <div class="button-row compact-row">
+                <button class="primary-button" id="encodeButton" type="button">Encode</button>
+                <button class="secondary-button" id="copyEncode" type="button">Copy</button>
+              </div>
+              <pre id="encodeOutput" class="utility-output">Output will appear here.</pre>
+            </div>
+
+            <div class="panel utility-card">
+              <div class="section-head"><div><div class="eyebrow">Decoder</div><h3>URL decoder</h3></div></div>
+              <textarea id="decodeInput" rows="4" placeholder="Paste encoded text to decode"></textarea>
+              <div class="button-row compact-row">
+                <button class="primary-button" id="decodeButton" type="button">Decode</button>
+                <button class="secondary-button" id="copyDecode" type="button">Copy</button>
+              </div>
+              <pre id="decodeOutput" class="utility-output">Output will appear here.</pre>
+            </div>
+
+            <div class="panel utility-card">
+              <div class="section-head"><div><div class="eyebrow">Hash generator</div><h3>SHA-256</h3></div></div>
+              <textarea id="hashInput" rows="4" placeholder="Type content to hash locally"></textarea>
+              <div class="button-row compact-row">
+                <button class="primary-button" id="hashButton" type="button">Generate hash</button>
+                <button class="secondary-button" id="copyHash" type="button">Copy</button>
+              </div>
+              <pre id="hashOutput" class="utility-output">Hash output will appear here.</pre>
+            </div>
+
+            <div class="panel utility-card">
+              <div class="section-head"><div><div class="eyebrow">Normalization</div><h3>URL normalizer</h3></div></div>
+              <textarea id="normalizeInput" rows="4" placeholder="https://example.com/path"></textarea>
+              <div class="button-row compact-row">
+                <button class="primary-button" id="normalizeButton" type="button">Normalize</button>
+                <button class="secondary-button" id="copyNormalize" type="button">Copy</button>
+              </div>
+              <pre id="normalizeOutput" class="utility-output">Normalized result will appear here.</pre>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-history" class="view-panel" aria-label="Reports and history">
+          <div class="panel history-panel">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">Reports and history</div>
+                <h3>Saved analysis history</h3>
+              </div>
+              <button class="secondary-button" id="clearHistory" type="button">Clear all</button>
+            </div>
+
+            <div class="history-controls">
+              <select id="historyTypeFilter" aria-label="Filter history by report type">
+                <option value="all">All report types</option>
+                <option value="url">URL reports</option>
+                <option value="message">Message reports</option>
+                <option value="qr">QR reports</option>
+                <option value="password">Password checks</option>
+              </select>
+              <select id="historyRiskFilter" aria-label="Filter by risk level">
+                <option value="all">All risk levels</option>
+                <option value="low">Low</option>
+                <option value="caution">Caution</option>
+                <option value="high">High</option>
+              </select>
+              <input id="historySearch" type="search" placeholder="Search history" aria-label="Search saved reports" />
+              <select id="historySort" aria-label="Sort saved reports">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+              </select>
+            </div>
+
+            <div class="history-grid">
+              <div id="historyList" class="history-list"></div>
+              <div id="historyDetail" class="history-detail empty-detail">
+                <h4>Choose a saved report</h4>
+                <p>Select any saved item to see the full summary and metadata.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-learning" class="view-panel" aria-label="Security learning center">
+          <div class="panel">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">Security learning</div>
+                <h3>Learn how to spot scams</h3>
+              </div>
+            </div>
+
+            <div class="accordion" id="learningAccordion">
+              <div class="accordion-item active">
+                <button class="accordion-trigger" type="button"><span>How phishing works</span><i data-lucide="chevron-down"></i></button>
+                <div class="accordion-content"><p>Phishing messages often create urgency and mimic legitimate services. A single trusted verification channel can reduce risk.</p></div>
+              </div>
+              <div class="accordion-item">
+                <button class="accordion-trigger" type="button"><span>Inspecting suspicious links</span><i data-lucide="chevron-down"></i></button>
+                <div class="accordion-content"><p>Check the full hostname, look for misspellings, odd subdomains, and insecure HTTP. When in doubt, verify through official channels.</p></div>
+              </div>
+              <div class="accordion-item">
+                <button class="accordion-trigger" type="button"><span>Domain impersonation</span><i data-lucide="chevron-down"></i></button>
+                <div class="accordion-content"><p>Attackers often use similar-looking domains, punycode, or added hyphens to imitate trusted brands. Compare the exact host carefully.</p></div>
+              </div>
+              <div class="accordion-item">
+                <button class="accordion-trigger" type="button"><span>Password and passphrase safety</span><i data-lucide="chevron-down"></i></button>
+                <div class="accordion-content"><p>Use long passphrases with unique combinations, avoid reuse, and enable multifactor authentication on critical accounts.</p></div>
+              </div>
+              <div class="accordion-item">
+                <button class="accordion-trigger" type="button"><span>QR code safety</span><i data-lucide="chevron-down"></i></button>
+                <div class="accordion-content"><p>QR codes can hide links to fake login pages or payment requests. Inspect the destination before opening it, and verify with the source.</p></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-settings" class="view-panel" aria-label="Settings and privacy">
+          <div class="settings-grid">
+            <div class="panel">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Appearance</div>
+                  <h3>Theme and preferences</h3>
+                </div>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong>Dark mode</strong>
+                  <p>Uses the default high-contrast cybersecurity layout.</p>
+                </div>
+                <label class="switch" for="themePreference">
+                  <input id="themePreference" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Privacy</div>
+                  <h3>Local history</h3>
+                </div>
+              </div>
+              <p>Saved reports stay in your browser using localStorage. This keeps your checks on-device without sending your data to a server.</p>
+              <div class="button-row compact-row">
+                <button class="secondary-button" id="exportHistorySettings" type="button">Export history JSON</button>
+                <button class="secondary-button" id="clearHistorySettings" type="button">Clear history</button>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">Website analytics</div>
+                  <h3>Pseudonymous visit measurement</h3>
+                </div>
+              </div>
+              <div class="setting-row analytics-setting-row">
+                <div>
+                  <strong id="analyticsPreferenceLabel">Share pseudonymous usage data</strong>
+                  <p id="analyticsPreferenceDescription">A random browser identifier and page names are used for aggregate traffic totals. Disable this to stop future collection on this browser.</p>
+                </div>
+                <label class="switch analytics-switch" for="analyticsPreference">
+                  <input id="analyticsPreference" type="checkbox" role="switch" aria-labelledby="analyticsPreferenceLabel" aria-describedby="analyticsPreferenceDescription" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">About</div>
+                  <h3>Application information</h3>
+                </div>
+              </div>
+              <ul class="settings-list">
+                <li>Browser-based checks only</li>
+                <li>No passwords are stored in local history</li>
+                <li>Heuristics are educational and not a real malware verdict</li>
+                <li>Use trusted verification channels before acting on unusual links</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+        <footer class="app-footer">
+          <span>© <span id="copyrightYear"></span> LinkShield. All Rights Reserved.</span>
+          <span>Made by Riazul Islam Tusar</span>
+        </footer>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <i data-lucide="check-circle-2"></i>
+      <span id="toastMessage">Saved</span>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
